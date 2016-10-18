@@ -2,5 +2,7 @@
 name = "emacs-rust-module"
 version = "0.1.0"
 authors = ["Sebastian Wiesner <swiesner@lunaryorn.com>"]
+build = "build.rs"
 
-[dependencies]
+[build-dependencies]
+bindgen = "*"
