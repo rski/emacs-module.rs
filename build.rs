@@ -23,8 +23,11 @@ use std::path::Path;
 fn generate_emacs_bindings(header: &str, out_dir: &str) -> io::Result<()> {
     let dest_path = Path::new(out_dir).join("emacs.rs");
 
-    let bindings = bindgen::Builder::new(header);
-    let generated_bindings = bindings.generate().expect("Failed to generate bindings");
+    let mut bindings = bindgen::Builder::new(header);
+    let generated_bindings = bindings.builtins()
+        .forbid_unknown_types()
+        .generate()
+        .expect("Failed to generate bindings");
 
     let mut file = try!(File::create(dest_path));
     try!(file.write(b"pub mod emacs {\n"));
