@@ -23,7 +23,7 @@ pub static plugin_is_GPL_compatible: i32 = 0;
 include!(concat!(env!("OUT_DIR"), "/emacs.rs"));
 
 use std::ffi::CString;
-use std::os::raw::{c_int};
+use std::os::raw::c_int;
 
 unsafe fn message(env: &mut emacs::env, text: &str) {
     let message_symbol = env.intern.unwrap()(env, CString::new("message").unwrap().as_ptr());
