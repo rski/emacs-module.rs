@@ -13,31 +13,47 @@
 // the License.
 
 extern crate bindgen;
+extern crate hyper;
 
+use hyper::client::IntoUrl;
 use std::env;
+use std::error::Error;
 use std::fs::File;
 use std::io;
 use std::io::prelude::*;
 use std::path::Path;
 
-fn generate_emacs_bindings(header: &str, out_dir: &str) -> io::Result<()> {
-    let dest_path = Path::new(out_dir).join("emacs.rs");
+static EMACS_VERSION: &'static str = "25.1";
 
-    let mut bindings = bindgen::Builder::new(header);
+fn download_emacs_module_header(dest_file: &Path) -> Result<&Path, Box<Error>> {
+    let client = hyper::Client::new();
+    let url = format!("https://raw.githubusercontent.\
+                       com/emacs-mirror/emacs/emacs-{}/src/emacs-module.h",
+                      EMACS_VERSION);
+    let mut response = try!(client.get(url.into_url().unwrap()).send());
+    let mut sink = try!(File::create(dest_file));
+    try!(io::copy(&mut response, &mut sink));
+    Ok(dest_file)
+}
+
+fn generate_emacs_bindings<'a>(header: &Path, module: &'a Path) -> io::Result<&'a Path> {
+    let mut bindings = bindgen::Builder::new(header.to_str().expect("Failed to convert path"));
     let generated_bindings = bindings.builtins()
         .forbid_unknown_types()
         .generate()
         .expect("Failed to generate bindings");
 
-    let mut file = try!(File::create(dest_path));
+    let mut file = try!(File::create(module));
     try!(file.write(b"pub mod emacs {\n"));
     try!(file.write(generated_bindings.to_string().as_bytes()));
     try!(file.write(b"\n}"));
-    Ok(())
+    Ok(module)
 }
 
 fn main() {
     let out_dir = env::var("OUT_DIR").unwrap();
-
-    generate_emacs_bindings("emacs-module.h", &out_dir).unwrap();
+    let header = Path::new(&out_dir).join("emacs-module.h");
+    let module = Path::new(&out_dir).join("emacs.rs");
+    generate_emacs_bindings(download_emacs_module_header(&header).unwrap(), &module).unwrap();
+    println!("Wrote emacs bindings to {}", module.to_string_lossy());
 }

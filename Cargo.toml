@@ -5,7 +5,12 @@ authors = ["Sebastian Wiesner <swiesner@lunaryorn.com>"]
 build = "build.rs"
 
 [build-dependencies]
-bindgen = "*"
+# Nail down bindgen to a particular version as we'd not like to have the
+# generated bindings change without notice
+bindgen = "^0.19"
+# Other build deps are fine in whatever version; they'll break the build but not
+# silently change it
+hyper = "*"
 
 [lib]
 crate-type = ["cdylib"]
