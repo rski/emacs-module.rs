@@ -38,8 +38,13 @@ fn download_emacs_module_header(dest_file: &Path) -> Result<&Path, Box<Error>> {
 
 fn generate_emacs_bindings<'a>(header: &Path, module: &'a Path) -> io::Result<&'a Path> {
     let mut bindings = bindgen::Builder::new(header.to_str().expect("Failed to convert path"));
-    let generated_bindings = bindings.builtins()
-        .forbid_unknown_types()
+    // Generate the bindings.  Make sure that we fail on unknown types, include C builtins for
+    // varargs support, remove the "emacs_" prefix from the types and convert C enums to Rust
+    // constants for easier use as return values.
+    let generated_bindings = bindings.forbid_unknown_types()
+        .builtins()
+        .remove_prefix("emacs_")
+        .rust_enums(false)
         .generate()
         .expect("Failed to generate bindings");
 

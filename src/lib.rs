@@ -25,7 +25,7 @@ include!(concat!(env!("OUT_DIR"), "/emacs.rs"));
 use std::ffi::CString;
 use std::os::raw::{c_int};
 
-unsafe fn message(env: &mut emacs::emacs_env, text: &str) {
+unsafe fn message(env: &mut emacs::env, text: &str) {
     let message_symbol = env.intern.unwrap()(env, CString::new("message").unwrap().as_ptr());
     let emacs_format =
         env.make_string.unwrap()(env, "%s".as_ptr() as (*const i8), "%s".len() as isize);
@@ -36,7 +36,7 @@ unsafe fn message(env: &mut emacs::emacs_env, text: &str) {
 }
 
 #[no_mangle]
-pub extern "C" fn emacs_module_init(runtime: *mut emacs::emacs_runtime) -> c_int {
+pub extern "C" fn emacs_module_init(runtime: *mut emacs::runtime) -> c_int {
     assert!(!runtime.is_null());
     println!("HELLO THERE FROM RUST");
 
@@ -44,6 +44,6 @@ pub extern "C" fn emacs_module_init(runtime: *mut emacs::emacs_runtime) -> c_int
         let env = (*runtime).get_environment.unwrap()(runtime);
         assert!(!env.is_null());
         message(&mut *env, "HELLO THERE FROM EMACS");
-        emacs::emacs_funcall_exit::emacs_funcall_exit_return as c_int
+        emacs::funcall_exit_return as i32
     }
 }
