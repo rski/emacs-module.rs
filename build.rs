@@ -12,6 +12,7 @@
 // License for the specific language governing permissions and limitations under
 // the License.
 
+extern crate env_logger;
 extern crate bindgen;
 extern crate hyper;
 
@@ -56,6 +57,10 @@ fn generate_emacs_bindings<'a>(header: &Path, module: &'a Path) -> io::Result<&'
 }
 
 fn main() {
+    // Enable the default environment system to make bindgen print errors when binding generation
+    // fails
+    env_logger::init().unwrap();
+
     let out_dir = env::var("OUT_DIR").unwrap();
     let header = Path::new(&out_dir).join("emacs-module.h");
     let module = Path::new(&out_dir).join("emacs.rs");

@@ -11,6 +11,7 @@ bindgen = "^0.19"
 # Other build deps are fine in whatever version; they'll break the build but not
 # silently change it
 hyper = "*"
+env_logger = "*"
 
 [lib]
 crate-type = ["cdylib"]
