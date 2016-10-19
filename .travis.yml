@@ -9,6 +9,9 @@ env:
     - EMACSCONFFLAGS="--with-x-toolkit=no --without-x --without-all --with-xml2 --with-toolkit-scroll-bars=yes --with-modules"
   matrix:
     - EMACS_VERSION=25.1
+# Ignore failures on Rust nightly
 matrix:
   allow_failures:
     - rust: nightly
+# Cache Cargo build directories to avoid rebuild deps each time
+cache: cargo
