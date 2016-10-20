@@ -26,7 +26,7 @@ use std::path::Path;
 
 static EMACS_VERSION: &'static str = "25.1";
 
-fn download_emacs_module_header(dest_file: &Path) -> Result<&Path, Box<Error>> {
+fn download_emacs_module_header(dest_file: &Path) -> Result<(), Box<Error>> {
     let client = hyper::Client::new();
     let url = format!("https://raw.githubusercontent.\
                        com/emacs-mirror/emacs/emacs-{}/src/emacs-module.h",
@@ -34,10 +34,26 @@ fn download_emacs_module_header(dest_file: &Path) -> Result<&Path, Box<Error>> {
     let mut response = try!(client.get(url.into_url().unwrap()).send());
     let mut sink = try!(File::create(dest_file));
     try!(io::copy(&mut response, &mut sink));
-    Ok(dest_file)
+    Ok(())
 }
 
-fn generate_emacs_bindings<'a>(header: &Path, module: &'a Path) -> io::Result<&'a Path> {
+fn prepare_emacs_module_header<'a>(orig: &Path, dest: &'a Path) -> io::Result<()> {
+    let mut source = try!(File::open(orig));
+    let mut contents = String::new();
+    try!(source.read_to_string(&mut contents));
+
+    // Skip over everything that could possibly contain 128bit integers, see
+    // https://github.com/lunaryorn/emacs-rust-module/issues/5
+    let prepared_header = contents.lines()
+        .filter(|l| !l.contains("intmax_t"))
+        .collect::<Vec<_>>()
+        .join("\n");
+
+    let mut sink = try!(File::create(&dest));
+    sink.write_all(prepared_header.as_bytes())
+}
+
+fn generate_emacs_bindings<'a>(header: &Path, module: &'a Path) -> io::Result<()> {
     let mut bindings = bindgen::Builder::new(header.to_str().expect("Failed to convert path"));
     // Generate the bindings.  Make sure that we fail on unknown types, include C builtins for
     // varargs support, remove the "emacs_" prefix from the types and convert C enums to Rust
@@ -55,7 +71,7 @@ fn generate_emacs_bindings<'a>(header: &Path, module: &'a Path) -> io::Result<&'
     try!(file.write(b"pub mod emacs {\n"));
     try!(file.write(generated_bindings.to_string().as_bytes()));
     try!(file.write(b"\n}"));
-    Ok(module)
+    Ok(())
 }
 
 fn main() {
@@ -65,7 +81,12 @@ fn main() {
 
     let out_dir = env::var("OUT_DIR").unwrap();
     let header = Path::new(&out_dir).join("emacs-module.h");
+    let prepared_header = Path::new(&out_dir).join("emacs-module-prepared.h");
     let module = Path::new(&out_dir).join("emacs.rs");
-    generate_emacs_bindings(download_emacs_module_header(&header).unwrap(), &module).unwrap();
+
+    download_emacs_module_header(&header).unwrap();
+    prepare_emacs_module_header(&header, &prepared_header).unwrap();
+    generate_emacs_bindings(&prepared_header, &module).unwrap();
+
     println!("Wrote emacs bindings to {}", module.to_string_lossy());
 }
