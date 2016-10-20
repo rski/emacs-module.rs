@@ -43,9 +43,11 @@ fn generate_emacs_bindings<'a>(header: &Path, module: &'a Path) -> io::Result<&'
     // varargs support, remove the "emacs_" prefix from the types and convert C enums to Rust
     // constants for easier use as return values.
     let generated_bindings = bindings.forbid_unknown_types()
-        .builtins()
         .remove_prefix("emacs_")
         .rust_enums(false)
+        // Only include relevant headers: The emacs header of course, and stddef.h for `ptrdiff_t`
+        .match_pat(header.to_str().unwrap())
+        .match_pat("stddef.h")
         .generate()
         .expect("Failed to generate bindings");
 
