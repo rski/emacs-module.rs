@@ -10,7 +10,7 @@ build = "build.rs"
 bindgen = "^0.19"
 # Other build deps are fine in whatever version; they'll break the build but not
 # silently change it
-hyper = "*"
+curl = "*"
 env_logger = "*"
 
 [lib]

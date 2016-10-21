@@ -14,9 +14,9 @@
 
 extern crate env_logger;
 extern crate bindgen;
-extern crate hyper;
+extern crate curl;
 
-use hyper::client::IntoUrl;
+use curl::easy::Easy;
 use std::env;
 use std::error::Error;
 use std::fs::File;
@@ -27,14 +27,15 @@ use std::path::Path;
 static EMACS_VERSION: &'static str = "25.1";
 
 fn download_emacs_module_header(dest_file: &Path) -> Result<(), Box<Error>> {
-    let client = hyper::Client::new();
     let url = format!("https://raw.githubusercontent.\
                        com/emacs-mirror/emacs/emacs-{}/src/emacs-module.h",
                       EMACS_VERSION);
-    let mut response = try!(client.get(url.into_url().unwrap()).send());
+    let mut client = Easy::new();
     let mut sink = try!(File::create(dest_file));
-    try!(io::copy(&mut response, &mut sink));
-    Ok(())
+    client.url(&url)
+        .and_then(|_| client.write_function(move |data| Ok(sink.write(data).unwrap())))
+        .and_then(|_| client.perform())
+        .map_err(From::from)
 }
 
 fn prepare_emacs_module_header<'a>(orig: &Path, dest: &'a Path) -> io::Result<()> {
