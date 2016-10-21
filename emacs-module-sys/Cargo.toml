@@ -1,0 +1,21 @@
+[package]
+name = "emacs-module-sys"
+version = "25.1.0"
+authors = ["Sebastian Wiesner <swiesner@lunaryorn.com>"]
+links = "emacs-module"
+build = "build.rs"
+repository = "https://github.com/lunaryorn/emacs-rust-module"
+license = "GPL-3"
+description = "Native interface declarations for Emacs modules"
+
+[lib]
+name = "emacs_module_sys"
+path = "lib.rs"
+
+[build-dependencies]
+# Auto-generate bindings from emacs-module.h
+bindgen = "^0.19"
+# Make bindgen output errors properly
+env_logger = "^0.3"
+# Download emacs-module.h header automatically from Emacs 25.1 sources
+curl = "^0.3"
