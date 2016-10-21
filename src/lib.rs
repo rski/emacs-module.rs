@@ -25,6 +25,30 @@ extern crate emacs_module_sys as sys;
 use std::ffi::CString;
 use std::os::raw::c_int;
 
+pub struct Runtime {
+    p: *mut sys::runtime
+}
+
+impl Runtime {
+    fn from_ptr(p: *mut sys::runtime) -> Runtime {
+        Runtime { p: p }
+    }
+
+    pub fn environment(&self) -> Environment {
+        Environment::from_ptr(unsafe {(*self.p).get_environment.unwrap()(self.p)})
+    }
+}
+
+pub struct Environment {
+    p: *mut sys::env
+}
+
+impl Environment {
+    fn from_ptr(p: *mut sys::env) -> Environment {
+        Environment { p: p }
+    }
+}
+
 unsafe fn message(env: &mut sys::env, text: &str) {
     let message_symbol = env.intern.unwrap()(env, CString::new("message").unwrap().as_ptr());
     let emacs_format =
