@@ -14,7 +14,7 @@ path = "lib.rs"
 
 [build-dependencies]
 # Auto-generate bindings from emacs-module.h
-bindgen = "^0.19"
+bindgen = "^0.31"
 # Make bindgen output errors properly
 env_logger = "^0.3"
 # Download emacs-module.h header automatically from Emacs 25.1 sources

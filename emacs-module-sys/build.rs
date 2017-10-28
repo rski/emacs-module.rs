@@ -60,16 +60,19 @@ fn prepare_emacs_module_header<'a>(orig: &Path, dest: &'a Path) -> io::Result<()
 }
 
 fn generate_emacs_bindings<'a>(header: &Path, module: &'a Path) -> io::Result<()> {
-    let mut bindings = bindgen::Builder::new(header.to_str().expect("Failed to convert path"));
-    // Make sure that we fail on unknown types
-    let generated_bindings = bindings.forbid_unknown_types()
+    // let mut bindings = bindgen::Builder::new(header.to_str().expect("Failed to convert path"));
+    let generated_bindings = bindgen::Builder::
+        default()
+        .header(header.to_str().expect("failed to convert path"))
+        // Make sure that we fail on unknown types
+        // .forbid_unknown_types()
         // Remove the "emacs_" prefix from the types
-        .remove_prefix("emacs_")
+        // .remove_prefix("emacs_")
         // Convert C enums to Rust constants for easier use as return values.
-        .rust_enums(false)
+        // .rust_enums(false)
         // Only include relevant headers: The emacs header of course, and stddef.h for `ptrdiff_t`
-        .match_pat(header.to_str().unwrap())
-        .match_pat("stddef.h")
+        // .match_pat(header.to_str().unwrap())
+        // .match_pat("stddef.h")
         .generate()
         .expect("Failed to generate bindings");
 

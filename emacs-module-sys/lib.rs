@@ -13,6 +13,7 @@
 
 include!(concat!(env!("OUT_DIR"), "/generated.rs"));
 
-pub use generated::{runtime, env};
-pub use generated::{funcall_exit, funcall_exit_return, funcall_exit_throw};
-pub use generated::variadic_function;
+pub use generated::{emacs_runtime, emacs_env};
+pub use generated::{emacs_funcall_exit, emacs_funcall_exit_emacs_funcall_exit_return,
+                    emacs_funcall_exit_emacs_funcall_exit_throw};
+pub use generated::emacs_arity_emacs_variadic_function;
