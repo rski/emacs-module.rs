@@ -29,8 +29,8 @@ unsafe fn message(env: &mut sys::env, text: &str) {
     let message_symbol = env.intern.unwrap()(env, CString::new("message").unwrap().as_ptr());
     let emacs_format =
         env.make_string.unwrap()(env, "%s".as_ptr() as (*const i8), "%s".len() as isize);
-    let emacs_text = env.make_string
-        .unwrap()(env, text.as_ptr() as (*const i8), text.len() as isize);
+    let emacs_text =
+        env.make_string.unwrap()(env, text.as_ptr() as (*const i8), text.len() as isize);
     let mut args = [emacs_format, emacs_text];
     env.funcall.unwrap()(env, message_symbol, args.len() as isize, args.as_mut_ptr());
 }

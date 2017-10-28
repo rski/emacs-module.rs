@@ -26,13 +26,18 @@ use std::path::Path;
 static EMACS_VERSION: &'static str = "25.1";
 
 fn download_emacs_module_header(dest_file: &Path) -> Result<(), Box<Error>> {
-    let url = format!("https://raw.githubusercontent.\
+    let url = format!(
+        "https://raw.githubusercontent.\
                        com/emacs-mirror/emacs/emacs-{}/src/emacs-module.h",
-                      EMACS_VERSION);
+        EMACS_VERSION
+    );
     let mut client = Easy::new();
     let mut sink = try!(File::create(dest_file));
-    client.url(&url)
-        .and_then(|_| client.write_function(move |data| Ok(sink.write(data).unwrap())))
+    client
+        .url(&url)
+        .and_then(|_| {
+            client.write_function(move |data| Ok(sink.write(data).unwrap()))
+        })
         .and_then(|_| client.perform())
         .map_err(From::from)
 }
@@ -44,7 +49,8 @@ fn prepare_emacs_module_header<'a>(orig: &Path, dest: &'a Path) -> io::Result<()
 
     // Skip over everything that could possibly contain 128bit integers, see
     // https://github.com/lunaryorn/emacs-rust-module/issues/5
-    let prepared_header = contents.lines()
+    let prepared_header = contents
+        .lines()
         .filter(|l| !l.contains("intmax_t"))
         .collect::<Vec<_>>()
         .join("\n");
